@@ -1,149 +1,252 @@
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../papber-toolbar/paper-toolbar.html">
 
-<!--
-An element providing a solution to no problem in particular.
-
-Example:
-
-    <google-at-uh></google-at-uh>
-
-@demo
--->
 <dom-module id="google-at-uh">
-
-  <style>
-    :host {
-      display: block;
-      box-sizing: border-box;
-    }
-
-    .author img {
-      float: left;
-      margin-right: 5px;
-      max-height: 100px;
-      max-width: 100px;
-    }
-  </style>
-
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <script src="https://apis.google.com/js/api:client.js"></script>
   <template>
-    <h1>&lt;google-at-uh&gt;</h1>
-    <content></content>
-    <p class="author">
-      <img src="{{author.image}}">
-      Cheers,<br/>
-      <span class="name">{{author.name}}</span>
-    </p>
+      <style is="custom-style">
+          paper-dialog {
+              --paper-dialog-background-color: white;
+              /* 2*24px (for left and right padding of iron-image) = 48px more than the logo width*/
+              width: 298px;
+              /* 8px for the spec and 2px to offset the button shadow */
+              padding-bottom: 10px;
+              text-align: center;
+          }
+          paper-dialog p {
+              text-align: left;
+          }
+          paper-toolbar {
+            margin-top: 0;
+              padding: 0;
+          }
+          #title {
+              margin-left: 8px;
+          }
+          #logo {
+              width: 250px;
+              height: 270px;
+              margin-top: 0;
+          }
+          paper-icon-item {
+              white-space: nowrap;
+          }
+          #helpLink {
+              float:right;
+              margin-bottom:0px;
+              padding-left: 4px;
+          }
+          #helpLink iron-icon {
+              width: 20px;
+              height: 20px;
+          }
+
+      </style>
+    <iron-ajax
+      id="uhJwtAjax"
+      url="{{uhJwtUrl}}"
+      headers="{{computeHeaders(googleUser)}}"
+      handle-as="json"
+      on-response="uhJwtAjaxResponseHandler"
+      on-error="uhJwtError"
+      last-response="{{lastUhJwtAjaxResponse}}"
+      debounce-duration="300"
+      loading="{{uhJwtAjaxLoading}}"></iron-ajax>
+      <paper-dialog id="signInDialog" modal>
+          <paper-toolbar>
+              <div id="title" class="paper-font-subhead">Sign In</div>
+          </paper-toolbar>
+          <iron-image id="logo" sizing="contain" preload src="university-logo-stacked.jpg"></iron-image>
+          <p id="helpLink"><a target="_blank" href="https://myuh.hawaii.edu:8888/sessionid=nobody/am-sso-check-status"><iron-icon icon="help"></iron-icon></a></p>
+          <p class="paper-font-body1">Sign in with your UH@Google account to get access to university resources.</p>
+          <google-at-uh-button id="signInButton"></google-at-uh-button>
+      </paper-dialog>
   </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'google-at-uh',
+        properties: {
+          //One way data-binding from parent to child
+          hostedDomain: String,
 
-</dom-module>
+          //One way data-binding from parent to child
+          clientId: String,
 
-<script>
+          //One way data-binding from parent to child
+          uhJwtUrl: String,
 
-  Polymer({
+          /**
+           * One way data binding from child to parent
+           *
+           * Because of the structure of the gapi GoogleUser object, this is a data binding friendly copy.
+           */
+          googleUser: {
+            type: Object,
+            notify: true,
+            readOnly: true
+          },
 
-    is: 'google-at-uh',
+          //One way data binding from child to parent
+          //The
+          uhUser: {
+            type: Object,
+            notify: true,
+            readOnly: true,
+            computed: '_computeUhUser(lastUhJwtAjaxResponse)'
+          },
+          //One way data binding from child to parent
+          initialized: {
+            type: Object,
+            notify: true,
+            readOnly: true,
+            value: false
+          },
+          //One way data binding from child to parent
+          loading: {
+            type: Object,
+            notify: true,
+            readOnly: true,
+            value: false,
+            computed: '_computeLoading(uhJwtAjaxLoading)'
+          }
+        },
 
-    properties: {
+        ready: function() {
+          var self = this;
+          gapi.load('auth2',
+            function() {
+              /*jshint camelcase: false */
+              // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-      /**
-       * `fancy` indicates that the element should don a monocle and tophat,
-       * while checking its pocket watch.
-       */
-      fancy: Boolean,
+              // Retrieve the singleton for the GoogleAuth library and set up the client.
+              var initParams = {
+                client_id: self.clientId,
+                scope: 'profile email'
+              };
+              if (self.hostedDomain !== null) {
+                initParams.hosted_domain = self.hostedDomain;
+              }
+              var auth2 = gapi.auth2.init(initParams);
+              auth2.then(self._initializeSuccess.bind(self), self._initializeFailure.bind(self));
 
-      /**
-       * Describes the author of the element, but is really just an excuse to
-       * show off JSDoc annotations.
-       *
-       * @type {{name: string, image: string}}
-       */
-      author: {
-        type: Object,
-        // Use `value` to provides a default value for a property, by setting it
-        // on your element's prototype.
-        //
-        // If you provide a function, as we do here, Polymer will call that
-        // _per element instance_.
-        //
-        // We do that to ensure that each element gets its own copy of the
-        // value, rather than having it shared across all instances (via the
-        // prototype).
-        value: function() {
-          return {
-            name:  'Dimitri Glazkov',
-            image: 'http://addyosmani.com/blog/wp-content/uploads/2013/04/unicorn.jpg',
+              //We don't need a success handler because we already have the googleAuth.currentUser listener
+              //If the user deny's the authorization request the error handler will be called.
+              auth2.attachClickHandler(self.$.signInButton, {}, null, self._signInFailure);
+            });
+        },
+
+        _initializeSuccess: function(googleAuth) {
+          if (googleAuth.isSignedIn.get()) {
+            var googleUser = this._createDataBindingGoogleUser(googleAuth.currentUser.get());
+            this._setGoogleUser(googleUser);
+            console.log('Initially logged in (google) as: ' + this.googleUser.email);
+            this.renewUhJwt();
+          } else {
+            console.log('Not initially logged in (google).');
+            this._setGoogleUser(null);
+            this.$.signInDialog.open();
+          }
+
+          googleAuth.currentUser.listen(this._auth2GoogleUserChanged.bind(this));
+
+          this._setInitialized(true);
+
+        },
+
+        _initializeFailure: function(reason) {
+          console.log('Failure initializing gapi.auth2: ' + reason);
+        },
+
+        _signInFailure: function(error) {
+          console.log('Sign in failure:');
+          console.log(JSON.stringify(error, undefined, 2));
+        },
+
+        /**
+         * Google's gapi will automatically call this method about 5 minutes before the current token expires.
+         */
+        _auth2GoogleUserChanged: function(currentUser) {
+          if (currentUser.isSignedIn()) {
+            var googleUser = this._createDataBindingGoogleUser(currentUser);
+            this._setGoogleUser(googleUser);
+            console.log('Logged in (google) as: ' + this.googleUser.email);
+            this.$.signInDialog.close();
+            this.renewUhJwt();
+          } else {
+            console.log('Logged out (google).');
+            this._setGoogleUser(null);
+            this.$.signInDialog.open();
+          }
+        },
+
+        /**
+         * The gapi.auth2 GoogleUser is difficult to work with because all the values are buried in method calls.
+         * This method copies the interesting values from the gapi.auth2 GoogleUser into a data binding friendly format.
+         */
+        _createDataBindingGoogleUser: function(originalGoogleUser) {
+          /*jshint camelcase: false */
+          // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+          if (originalGoogleUser === null) {
+            return null;
+          }
+          var basicProfile = originalGoogleUser.getBasicProfile();
+          var authResponse = originalGoogleUser.getAuthResponse();
+          var googleUser = {
+            'name': basicProfile.getName(),
+            'givenName': basicProfile.getGivenName(),
+            'familyName': basicProfile.getFamilyName(),
+            'email': basicProfile.getEmail(),
+            'id': basicProfile.getId(),
+            'photoUrl': basicProfile.getImageUrl(),
+            'jwt': authResponse.id_token,
+            'expiresIn': authResponse.expires_in,
+            'expiresAt': authResponse.expires_at,
+            'hostedDomain': originalGoogleUser.getHostedDomain()
           };
+          return googleUser;
+        } ,
+
+        computeHeaders: function(googleUser) {
+          if (googleUser) {
+            var headers = {};
+            headers.Authorization = googleUser.jwt;
+            return headers;
+          }
+        },
+
+        //TODO just make a copy in the uhJwtAjaxResponseHandler to simplify.
+        //Tied directly to the result of the UH JWT ajax call.
+        _computeUhUser: function(lastUhJwtAjaxResponse) {
+          return lastUhJwtAjaxResponse;
+        },
+
+        _computeLoading: function(uhJwtAjaxLoading) {
+          return uhJwtAjaxLoading;
+        },
+
+        signOut: function() {
+          var auth2 = gapi.auth2.getAuthInstance();
+          auth2.signOut();
+          this._setGoogleUser(null);
+          //The uhUser is computed from the lastUhJwtAjaxResponse so we need to null that out instead.
+          //Also note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.
+          this.lastUhJwtAjaxResponse = null;
+        },
+        renewUhJwt: function() {
+          console.log('Getting new UH JWT.');
+          this.$.uhJwtAjax.generateRequest();
+        },
+        uhJwtAjaxResponseHandler: function(/*e*/) {
+          console.log('Logged in (service) as: ' + this.uhUser.name);
+          //TODO Set uhUser here instead of computing it based on lastUhJwtAjaxResponse.
+        },
+        uhJwtError: function(/*e*/) {
+          //TODO handle with message to user.
+          console.error('Error logging in to service.');
         }
-      },
-
-    },
-
-    // Element Lifecycle
-
-    ready: function() {
-      // `ready` is called after all elements have been configured, but
-      // propagates bottom-up. This element's children are ready, but parents
-      // are not.
-      //
-      // This is the point where you should make modifications to the DOM (when
-      // necessary), or kick off any processes the element wants to perform.
-    },
-
-    attached: function() {
-      // `attached` fires once the element and its parents have been inserted
-      // into a document.
-      //
-      // This is a good place to perform any work related to your element's
-      // visual state or active behavior (measuring sizes, beginning animations,
-      // loading resources, etc).
-    },
-
-    detached: function() {
-      // The analog to `attached`, `detached` fires when the element has been
-      // removed from a document.
-      //
-      // Use this to clean up anything you did in `attached`.
-    },
-
-    // Element Behavior
-
-    /**
-     * The `google-at-uh-lasers` event is fired whenever `fireLasers` is called.
-     *
-     * @event google-at-uh-lasers
-     * @detail {{sound: String}}
-     */
-
-    /**
-     * Sometimes it's just nice to say hi.
-     *
-     * @param {string} greeting A positive greeting.
-     * @return {string} The full greeting.
-     */
-    sayHello: function(greeting) {
-      var response = greeting || 'Hello World!';
-      return 'google-at-uh says, ' + response;
-    },
-
-    /**
-     * Attempts to destroy this element's enemies with an any beam of light!
-     *
-     * Or, at least, dispatches an event in the vain hope that someone else will
-     * do the zapping.
-     */
-    fireLasers: function() {
-      this.fire('google-at-uh-lasers', {sound: 'Pew pew!'});
-    }
-
-  });
-
-</script>
+      });
+    })();
+  </script>
+</dom-module>
