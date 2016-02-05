@@ -1,4 +1,7 @@
-<link rel="import" href="../papber-toolbar/paper-toolbar.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="google-at-uh-button.html">
 
 <dom-module id="google-at-uh">
   <script src="https://apis.google.com/js/platform.js"></script>
@@ -114,6 +117,12 @@
         },
 
         ready: function() {
+          if(this.clientId) {
+              this._initializeGoogleAuth();
+          }
+        },
+
+        initializeGoogleAuth: function() {
           var self = this;
           gapi.load('auth2',
             function() {
@@ -130,10 +139,9 @@
               }
               var auth2 = gapi.auth2.init(initParams);
               auth2.then(self._initializeSuccess.bind(self), self._initializeFailure.bind(self));
-
-              //We don't need a success handler because we already have the googleAuth.currentUser listener
-              //If the user deny's the authorization request the error handler will be called.
-              auth2.attachClickHandler(self.$.signInButton, {}, null, self._signInFailure);
+                 //We don't need a success handler because we already have the googleAuth.currentUser listener
+                //If the user deny's the authorization request the error handler will be called.
+                auth2.attachClickHandler(self.$.signInButton, {}, null, self._signInFailure);
             });
         },
 
