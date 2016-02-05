@@ -45,7 +45,7 @@
           save it as <span class="paper-font-code2">app-config.html</span> or manually enter them below.</p>
         <paper-input label="Client ID (required)" value="{{appConfig.clientId}}" required></paper-input>
         <paper-input label="Hosted Domain (optional)" value="{{appConfig.hostedDomain}}"></paper-input>
-        <paper-input label="UH JWT Service Endpoint (optional)" value="{{appConfig.uhJwtUrl}}" required></paper-input>
+        <paper-input label="UH JWT Service Endpoint (optional - but only Google User data will work without it)" value="{{appConfig.uhJwtUrl}}" required></paper-input>
 
         <google-at-uh
                 id="authentication"
@@ -58,7 +58,9 @@
                 loading="{{authenticationLoading}}">
         </google-at-uh>
 
-        <p>Normally those values would be set by the application behind the scenes and the user would be signed it automatically.</p>
+        <p>Normally those values would be set by the application behind the scenes and the user would be signed it automatically.
+          See the <span class="paper-font-code1">google-at-uh-auth</span> github wiki page - <a href="https://github.com/UniversityOfHawaii/google-at-uh-auth/wiki/Google-Setup">Google Setup</a>
+        - for more information.</p>
 
       </paper-material>
 
