@@ -1,0 +1,35 @@
+<dom-module id="google-at-uh-button">
+  <template>
+    <style is="custom-style">
+      paper-button {
+        padding-left: 8px;
+
+        --paper-button-ink-color: var(--accent-color);
+      }
+      iron-image {
+        vertical-align: middle;
+        margin-right: 14px;
+      }
+      #text {
+        color: rgb(117, 117, 117);
+        text-transform: none;
+      }
+
+    </style>
+    <paper-button raised><iron-image src="google-sign-in-logo.svg"></iron-image><span id="text" class="paper-font-body2" style="font-size: 13px;">[[text]]</span></paper-button>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'google-at-uh-button',
+        properties: {
+          text: {
+            type: String,
+            value: 'Sign in with Google@UH'
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>
