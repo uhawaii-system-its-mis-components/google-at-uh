@@ -1,6 +1,8 @@
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../iron-image/iron-image.html">
+
 <link rel="import" href="google-at-uh-button.html">
 
 <dom-module id="google-at-uh">
@@ -21,7 +23,9 @@
           }
           paper-toolbar {
             margin-top: 0;
-              padding: 0;
+            padding: 0;
+            --paper-toolbar-background: var(--default-primary-color);
+            --paper-toolbar-color: var(--text-primary-color);
           }
           #title {
               margin-left: 8px;
@@ -246,7 +250,7 @@
           console.log('Getting new UH JWT.');
           this.$.uhJwtAjax.generateRequest();
         },
-        uhJwtAjaxResponseHandler: function(/*e*/) {
+        uhJwtAjaxResponseHandler: function(e) {
           console.log('Logged in (service) as: ' + this.uhUser.name);
           //TODO Set uhUser here instead of computing it based on lastUhJwtAjaxResponse.
         },

@@ -1,0 +1,61 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<!-- http://countdownjs.org/ -->
+<script src="countdown.min.js"></script>
+
+<dom-module id="count-down">
+  <template>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'count-down',
+
+        properties: {
+          //One way data binding from child to parent
+          to: {
+            type: Date,
+            observer: '_toChanged'
+          },
+          //One way data binding from child to parent
+          expired: {
+            type: Boolean,
+            notify: true,
+            readOnly: true
+          }
+        },
+
+        _timerId: null,
+
+        _toChanged: function(newTo) {
+          /*jslint bitwise: true */
+          /* globals countdown */
+          if (this.timerId) {
+            window.clearInterval(this.timerId);
+          }
+          if (newTo) {
+            var self = this;
+            this.timerId =
+              countdown(
+                newTo,
+                (function(ts) {
+                  if (self.to <= new Date()) {
+                    window.clearInterval(this.timerId);
+                    this.innerHTML = 'Expired';
+                    return;
+                  }
+                  this.innerHTML = ts.toHTML();
+                }).bind(this),
+                countdown.HOURS | countdown.MINUTES | countdown.SECONDS);
+          } else {
+            this.innerHTML = '';
+          }
+        }
+      });
+    })();
+  </script>
+
+</dom-module>

@@ -1,13 +1,4 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
   <head>
     <meta charset="utf-8">
@@ -15,20 +6,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <title>google-at-uh Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../../iron-flex-layout/classes/iron-flex-layout.html">
+    <link rel="import" href="../../paper-button/paper-button.html">
     <link rel="import" href="../../paper-input/paper-input.html">
     <link rel="import" href="../../paper-material/paper-material.html">
+    <link rel="import" href="../../paper-styles/paper-styles-classes.html">
+
+    <link rel="import" href="../count-down/count-down.html">
+    <link rel="import" href="../app-config/app-config.html">
     <link rel="import" href="../styles/demo-theme.html">
     <link rel="import" href="../styles/demo-styles.html">
-
-    <link rel="import" href="../google-at-uh.html">
 
     <style is="custom-style" include="shared-styles"></style>
 
     <link rel="stylesheet" href="../styles/demo-styles.css">
+
+    <!-- google-at-uh-element imports -->
+    <link rel="import" href="../google-at-uh.html">
+    <link rel="import" href="../uh-nav-profile-header.html">
   </head>
   <body unresolved class="fullbleed layout vertical center">
 
   <template is="dom-bind" id="app">
+    <app-config app-config="{{appConfig}}"></app-config>
     <paper-toolbar class="primary tall fit">
       <div class="title"><code>&lt;google-at-uh&gt;</code></div>
       <paper-progress class="bottom fit" value="60"></paper-progress>
@@ -38,28 +37,151 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <paper-material elevation="1" class="toolbar-cover paper-font-body1">
         <paper-toolbar>
-          <span class="title">Configuration</span>
+          <span class="title">External Configuration</span>
         </paper-toolbar>
-        <paper-input label="Client ID" value="{{clientId}}" required></paper-input>
-        <paper-input label="Hosted Domain" value="{{hostedDomain}}" required></paper-input>
-        <paper-input label="UH JWT Url" value="{{uhJwtUrl}}" required></paper-input>
+        <p>You can replace the values
+          <span class="paper-font-code2">&lt;%clientId%&gt;</span>,  <span class="paper-font-code2">&lt;%hostedDomain%&gt;</span>, and
+          <span class="paper-font-code2">&lt;%uhJwtUrl%&gt;</span> in the <span class="paper-font-code2">app-config/app-config-template.html</span> file and
+          save it as <span class="paper-font-code2">app-config.html</span> or manually enter them below.</p>
+        <paper-input label="Client ID (required)" value="{{appConfig.clientId}}" required></paper-input>
+        <paper-input label="Hosted Domain (optional)" value="{{appConfig.hostedDomain}}"></paper-input>
+        <paper-input label="UH JWT Service Endpoint (optional)" value="{{appConfig.uhJwtUrl}}" required></paper-input>
 
         <google-at-uh
                 id="authentication"
-                client-id="{{clientId}}"
-                hosted-domain="{{hostedDomain}}"
-                uh-jwt-url="{{uhJwtUrl}}"
-                signed-in="{{signedIn}}"
+                client-id="{{appConfig.clientId}}"
+                hosted-domain="{{appConfig.hostedDomain}}"
+                uh-jwt-url="{{appConfig.uhJwtUrl}}"
                 google-user="{{googleUser}}"
                 uh-user="{{uhUser}}"
                 initialized="{{authenticationInitialized}}"
                 loading="{{authenticationLoading}}">
         </google-at-uh>
 
+        <p>Normally those values would be set by the application behind the scenes and the user would be signed it automatically.</p>
+
+      </paper-material>
+
+      <paper-material elevation="1" class="paper-font-body1">
+
+        <paper-toolbar>
+          <span class="title">Navigation Drawer Header</span>
+        </paper-toolbar>
+
+        <p>This navigation drawer header would normally be added at the top of a <code>&lt;paper-scroll-header-panel&gt;</code> within a <code>&lt;paper-drawer-panel&gt;</code>.</p>
+
+        <div id="profileContainer" style="width: 255px; height:128px;">
+          <uh-nav-profile-header uh-user="{{uhUser}}"></uh-nav-profile-header>
+        </div>
+
         <div class="layout horizontal">
           <div class="flex"></div>
-          <paper-button on-tap="setConfig" class="accent" style="margin-top: 16px;">Set Configuration</paper-button>
+          <paper-button on-tap="signOut" hidden$="{{!uhUser}}" class="accent" style="margin-top: 16px;">Sign Out</paper-button>
+          <paper-button on-tap="startAuthentication" hidden$="{{uhUser}}" class="accent" style="margin-top: 16px;">Sign In</paper-button>
         </div>
+
+        <h3>Note</h3>
+        <p>Make sure the configuration values are properly set or the sign in won't work.</p>
+
+      </paper-material>
+
+      <paper-material elevation="1" id="tokensSection" class="paper-font-body1">
+        <paper-toolbar>
+          <div class="title">Token Expiration</div>
+        </paper-toolbar>
+        <p>The Google JWT will renews automatically. The UH JWT will expire to provide
+          more flexibility to experiment. You can get a new UH token using the button below.
+        </p>
+
+        <p>If the console is open, hitting the debugger button
+          will stop in the main app's context so you can explore the data.</p>
+
+        <dl>
+          <dt class="paper-font-code2">uh jwt</dt>
+          <dd class="paper-font-code1"><count-down to="[[uhJwtExpiresDate(uhUser)]]"></count-down></dd>
+          <dt class="paper-font-code2">google jwt</dt>
+          <dd class="paper-font-code1"><count-down to="[[googleJwtExpiresDate(googleUser)]]"></count-down></dd>
+        </dl>
+
+        <div class="layout horizontal">
+          <div class="flex"></div>
+          <paper-button on-tap="refreshUHToken" class="accent">New UH Token</paper-button>
+        </div>
+      </paper-material>
+
+      <paper-material elevation="1" id="uhUser">
+        <paper-toolbar>
+          <div class="title">UH User</div>
+        </paper-toolbar>
+        <dl>
+
+          <dt class="paper-font-code2">username</dt>
+          <dd class="paper-font-code1">{{uhUser.username}}</dd>
+
+          <dt class="paper-font-code2">name</dt>
+          <dd class="paper-font-code1">{{uhUser.name}}</dd>
+
+          <dt class="paper-font-code2">email</dt>
+          <dd class="paper-font-code1">{{uhUser.email}}</dd>
+
+          <dt class="paper-font-code2">hosted domain</dt>
+          <dd class="paper-font-code1">{{uhUser.hostedDomain}}</dd>
+
+          <dt class="paper-font-code2">uh id</dt>
+          <dd class="paper-font-code1">{{uhUser.uhId}}</dd>
+
+          <dt class="paper-font-code2">photo url</dt>
+          <dd class="paper-font-code1">{{uhUser.photoUrl}}</dd>
+
+          <dt class="paper-font-code2">photo</dt>
+          <dd class="paper-font-code1"><iron-image src="{{getFullSizePhotoUrl(uhUser.photoUrl)}}"></iron-image></dd>
+
+          <dt class="paper-font-code2">groups</dt>
+          <dd class="paper-font-code1">{{uhUser.groups}}</dd>
+
+          <dt class="paper-font-code2">authorities</dt>
+          <dd class="paper-font-code1">{{uhUser.authorities}}</dd>
+
+          <dt class="paper-font-code2">uh jwt</dt>
+          <dd class="paper-font-code1">{{uhUser.uhJwt}}</dd>
+
+          <dt class="paper-font-code2">uh jwt expiration</dt>
+          <dd class="paper-font-code1">{{uhJwtExpiresDate(uhUser)}}</dd>
+
+        </dl>
+      </paper-material>
+
+      <paper-material elevation="1" id="googleUser">
+        <paper-toolbar>
+          <div class="title">Google User</div>
+        </paper-toolbar>
+        <dl>
+
+          <dt class="paper-font-code2">email</dt>
+          <dd class="paper-font-code1">{{googleUser.email}}</dd>
+
+          <dt class="paper-font-code2">name</dt>
+          <dd class="paper-font-code1">{{googleUser.name}}</dd>
+
+          <dt class="paper-font-code2">photo url</dt>
+          <dd class="paper-font-code1">{{googleUser.photoUrl}}</dd>
+
+          <dt class="paper-font-code2">photo</dt>
+          <dd class="paper-font-code1"><iron-image src="{{getFullSizePhotoUrl(googleUser.photoUrl)}}"></iron-image></dd>
+
+          <dt class="paper-font-code2">id</dt>
+          <dd class="paper-font-code1">{{googleUser.id}}</dd>
+
+          <dt class="paper-font-code2">hosted domain</dt>
+          <dd class="paper-font-code1">{{googleUser.hostedDomain}}</dd>
+
+          <dt class="paper-font-code2">google jwt</dt>
+          <dd class="paper-font-code1">{{googleUser.jwt}}</dd>
+
+          <dt class="paper-font-code2">google jwt expires at</dt>
+          <dd class="paper-font-code1">{{googleJwtExpiresDate(googleUser)}}</dd>
+
+        </dl>
       </paper-material>
 
     </div>
@@ -67,11 +189,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     (function() {
-      var template = document.querySelector('template[is="dom-bind"]');
+      var scope = document.querySelector('template[is="dom-bind"]');
 
-      template.setConfig = function() {
+      scope.uhUser = null;
+
+      scope.startAuthentication = function() {
         this.$.authentication.initializeGoogleAuth();
       };
+
+      scope.signOut = function() {
+        this.$.authentication.signOut();
+      };
+
+      scope.googleJwtExpiresDate = function(googleUser) {
+        if (googleUser) {
+          return new Date(googleUser.expiresAt);
+        }
+      };
+
+      scope.uhJwtExpiresDate = function(uhUser) {
+        if(uhUser) {
+          return new Date(uhUser.uhJwtExpireTime);
+        }
+      };
+
+      scope.refreshUHToken = function() {
+        this.$.authentication.renewUhJwt();
+      };
+
+      scope.getFullSizePhotoUrl = function(photoUrl) {
+        if(photoUrl != null) {
+          return photoUrl.replace('s96-c/', '');
+        }
+      }
 
     })();
   </script>
