@@ -1,18 +1,8 @@
 {
   "name": "google-at-uh",
   "version": "1.0.0",
-  "authors": [
-    "Anonymous <anonymous@example.com>"
-  ],
-  "description": "An element providing a solution to no problem in particular.",
-  "keywords": [
-    "web-component",
-    "web-components",
-    "polymer",
-    "seed"
-  ],
+  "description": "Polymer element to integrate Google@UH with a polymer app.",
   "main": "google-at-uh.html",
-  "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/UniversityOfHawaii/google-at-uh-element/",
   "ignore": [
     "/.*",
@@ -20,7 +10,11 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.0.0",
+    "paper-dialog": "PolymerElements/paper-dialog#~1.0.3",
+    "iron-image": "PolymerElements/iron-image#~1.2.1",
+    "paper-input": "PolymerElements/paper-input#~1.1.5",
+    "paper-progress": "PolymerElements/paper-progress#~1.0.8"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
