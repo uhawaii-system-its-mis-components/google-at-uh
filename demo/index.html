@@ -14,23 +14,67 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>google-at-uh Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../iron-flex-layout/classes/iron-flex-layout.html">
+    <link rel="import" href="../../paper-input/paper-input.html">
+    <link rel="import" href="../../paper-material/paper-material.html">
+    <link rel="import" href="../styles/demo-theme.html">
+    <link rel="import" href="../styles/demo-styles.html">
+
     <link rel="import" href="../google-at-uh.html">
+
+    <style is="custom-style" include="shared-styles"></style>
+
+    <link rel="stylesheet" href="../styles/demo-styles.css">
   </head>
-  <body>
+  <body unresolved class="fullbleed layout vertical center">
 
-    <p>An example of <code>&lt;google-at-uh&gt;</code>:</p>
+  <template is="dom-bind" id="app">
+    <paper-toolbar class="primary tall fit">
+      <div class="title"><code>&lt;google-at-uh&gt;</code></div>
+      <paper-progress class="bottom fit" value="60"></paper-progress>
+    </paper-toolbar>
 
-    <button>Say Something</button>
+    <div id="content">
 
-    <google-at-uh author='{"name": "Lord Meowser", "image": "http://placekitten.com/g/200/300"}' fancy>
-      <h2>Hello google-at-uh</h2>
-    </google-at-uh>
+      <paper-material elevation="1" class="toolbar-cover paper-font-body1">
+        <paper-toolbar>
+          <span class="title">Configuration</span>
+        </paper-toolbar>
+        <paper-input label="Client ID" value="{{clientId}}" required></paper-input>
+        <paper-input label="Hosted Domain" value="{{hostedDomain}}" required></paper-input>
+        <paper-input label="UH JWT Url" value="{{uhJwtUrl}}" required></paper-input>
 
-    <script>
-      document.querySelector('button').addEventListener('click', function() {
-        alert(document.querySelector('google-at-uh').sayHello('Hallo!'));
-      });
-    </script>
+        <google-at-uh
+                id="authentication"
+                client-id="{{clientId}}"
+                hosted-domain="{{hostedDomain}}"
+                uh-jwt-url="{{uhJwtUrl}}"
+                signed-in="{{signedIn}}"
+                google-user="{{googleUser}}"
+                uh-user="{{uhUser}}"
+                initialized="{{authenticationInitialized}}"
+                loading="{{authenticationLoading}}">
+        </google-at-uh>
+
+        <div class="layout horizontal">
+          <div class="flex"></div>
+          <paper-button on-tap="setConfig" class="accent" style="margin-top: 16px;">Set Configuration</paper-button>
+        </div>
+      </paper-material>
+
+    </div>
+    </template>
+
+  <script>
+    (function() {
+      var template = document.querySelector('template[is="dom-bind"]');
+
+      template.setConfig = function() {
+        this.$.authentication.initializeGoogleAuth();
+      };
+
+    })();
+  </script>
 
   </body>
 </html>
