@@ -24,7 +24,7 @@
 
     <!-- google-at-uh-element imports -->
     <link rel="import" href="../google-at-uh.html">
-    <link rel="import" href="../uh-nav-profile-header.html">
+    <link rel="import" href="../uh-nav-user-header.html">
   </head>
   <body unresolved class="fullbleed layout vertical center">
 
@@ -63,28 +63,26 @@
           See the <span class="paper-font-code1">google-at-uh-auth</span> github wiki page - <a href="https://github.com/UniversityOfHawaii/google-at-uh-auth/wiki/Google-Setup">Google Setup</a>
         - for more information.</p>
 
-      </paper-material>
-
-      <paper-material elevation="1" class="paper-font-body1">
-
-        <paper-toolbar>
-          <span class="title">Navigation Drawer Header</span>
-        </paper-toolbar>
-
-        <p>This navigation drawer header would normally be added at the top of a <code>&lt;paper-scroll-header-panel&gt;</code> within a <code>&lt;paper-drawer-panel&gt;</code>.</p>
-
-        <h3>Note</h3>
-        <p>Make sure the configuration values are properly set or the sign in won't work.</p>
-
-        <div id="profileContainer" style="width: 255px; height:128px;">
-          <uh-nav-profile-header uh-user="{{uhUser}}"></uh-nav-profile-header>
-        </div>
-
         <div class="layout horizontal">
           <div class="flex"></div>
           <paper-button on-tap="signOut" hidden$="{{!uhUser}}" class="accent" style="margin-top: 16px;">Sign Out</paper-button>
           <paper-button on-tap="startAuthentication" hidden$="{{uhUser}}" class="accent" style="margin-top: 16px;">Sign In</paper-button>
         </div>
+
+      </paper-material>
+
+      <paper-material elevation="1" class="paper-font-body1">
+
+        <paper-toolbar>
+          <span class="title">Element <span class="paper-font-code2">&lt;uh-nav-user-header&gt;</span></span>
+        </paper-toolbar>
+
+        <p>This navigation drawer header would normally be added at the top of a <code>&lt;paper-scroll-header-panel&gt;</code> within a <code>&lt;paper-drawer-panel&gt;</code>.</p>
+
+        <div id="profileContainer" style="width: 255px; height:128px;">
+          <uh-nav-user-header uh-user="{{uhUser}}"></uh-nav-user-header>
+        </div>
+
       </paper-material>
 
       <paper-material elevation="1" id="tokensSection" class="paper-font-body1">
@@ -94,9 +92,6 @@
         <p>The Google JWT will renews automatically. The UH JWT will expire to provide
           more flexibility to experiment. You can get a new UH token using the button below.
         </p>
-
-        <p>If the console is open, hitting the debugger button
-          will stop in the main app's context so you can explore the data.</p>
 
         <dl>
           <dt class="paper-font-code2">uh jwt</dt>
