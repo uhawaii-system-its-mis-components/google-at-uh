@@ -9,7 +9,9 @@
     <link rel="import" href="../../paper-button/paper-button.html">
     <link rel="import" href="../../paper-input/paper-input.html">
     <link rel="import" href="../../paper-material/paper-material.html">
+    <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
     <link rel="import" href="../../paper-styles/paper-styles-classes.html">
+    <link rel="import" href="../../paper-toast/paper-toast.html">
 
     <link rel="import" href="../count-down/count-down.html">
     <link rel="import" href="../app-config/app-config.html">
@@ -28,13 +30,22 @@
 
   <template is="dom-bind" id="app">
     <app-config app-config="{{appConfig}}"></app-config>
+    <google-at-uh
+            id="authentication"
+            client-id="{{appConfig.clientId}}"
+            hosted-domain="{{appConfig.hostedDomain}}"
+            uh-jwt-url="{{appConfig.uhJwtUrl}}"
+            google-user="{{googleUser}}"
+            uh-user="{{uhUser}}"
+            initialized="{{authenticationInitialized}}"
+            loading="{{authenticationLoading}}">
+    </google-at-uh>
+
     <paper-toolbar class="primary tall fit">
       <div class="title"><code>&lt;google-at-uh&gt;</code></div>
-      <paper-progress class="bottom fit" value="60"></paper-progress>
     </paper-toolbar>
 
     <div id="content">
-
       <paper-material elevation="1" class="toolbar-cover paper-font-body1">
         <paper-toolbar>
           <span class="title">External Configuration</span>
@@ -47,16 +58,6 @@
         <paper-input label="Hosted Domain (optional)" value="{{appConfig.hostedDomain}}"></paper-input>
         <paper-input label="UH JWT Service Endpoint (optional - but only Google User data will work without it)" value="{{appConfig.uhJwtUrl}}" required></paper-input>
 
-        <google-at-uh
-                id="authentication"
-                client-id="{{appConfig.clientId}}"
-                hosted-domain="{{appConfig.hostedDomain}}"
-                uh-jwt-url="{{appConfig.uhJwtUrl}}"
-                google-user="{{googleUser}}"
-                uh-user="{{uhUser}}"
-                initialized="{{authenticationInitialized}}"
-                loading="{{authenticationLoading}}">
-        </google-at-uh>
 
         <p>Normally those values would be set by the application behind the scenes and the user would be signed it automatically.
           See the <span class="paper-font-code1">google-at-uh-auth</span> github wiki page - <a href="https://github.com/UniversityOfHawaii/google-at-uh-auth/wiki/Google-Setup">Google Setup</a>
@@ -72,6 +73,9 @@
 
         <p>This navigation drawer header would normally be added at the top of a <code>&lt;paper-scroll-header-panel&gt;</code> within a <code>&lt;paper-drawer-panel&gt;</code>.</p>
 
+        <h3>Note</h3>
+        <p>Make sure the configuration values are properly set or the sign in won't work.</p>
+
         <div id="profileContainer" style="width: 255px; height:128px;">
           <uh-nav-profile-header uh-user="{{uhUser}}"></uh-nav-profile-header>
         </div>
@@ -81,10 +85,6 @@
           <paper-button on-tap="signOut" hidden$="{{!uhUser}}" class="accent" style="margin-top: 16px;">Sign Out</paper-button>
           <paper-button on-tap="startAuthentication" hidden$="{{uhUser}}" class="accent" style="margin-top: 16px;">Sign In</paper-button>
         </div>
-
-        <h3>Note</h3>
-        <p>Make sure the configuration values are properly set or the sign in won't work.</p>
-
       </paper-material>
 
       <paper-material elevation="1" id="tokensSection" class="paper-font-body1">
@@ -187,6 +187,14 @@
       </paper-material>
 
     </div>
+
+    <paper-toast id="loadingToast"
+                 opened="{{authenticationLoading}}"
+                 duration="0"
+                 text="Loading..." class="layout horizontal">
+      <span class="layout flex"></span>
+      <paper-spinner-lite active></paper-spinner-lite>
+    </paper-toast>
     </template>
 
   <script>
@@ -223,7 +231,7 @@
         if(photoUrl != null) {
           return photoUrl.replace('s96-c/', '');
         }
-      }
+      };
 
     })();
   </script>
