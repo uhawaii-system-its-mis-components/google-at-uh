@@ -5,6 +5,17 @@
 
 <link rel="import" href="google-at-uh-button.html">
 
+<!--
+`<google-at-uh>` provides authentication and authorization integration with a service that uses
+<a href="https://github.com/UniversityOfHawaii/google-at-uh-auth">`google-at-uh-auth`</a>.
+
+See the <a href="demo/index.html">demo page</a> for an example of how to use it.
+
+The component use the <a href="https://developers.google.com/identity/sign-in/web/reference">Google Sign-In javascript library</a>
+to allow the user to sign in using a Google account. Once the user has signed in with Google the component
+then exchanges a Google ID Token to for a UH JWT that can be used to authenticate with a service.
+
+-->
 <dom-module id="google-at-uh">
   <script src="https://apis.google.com/js/platform.js"></script>
   <script src="https://apis.google.com/js/api:client.js"></script>
