@@ -14,7 +14,7 @@ See the <a href="demo/index.html">demo page</a> for an example of how to use it.
 
 The component use the <a href="https://developers.google.com/identity/sign-in/web/reference">Google Sign-In javascript library</a>
 to allow the user to sign in using a Google account. Once the user has signed in with Google the component
-then exchanges a Google ID Token to for a UH JWT that can be used to authenticate with a service.
+then exchanges a Google ID Token for a UH JWT that can be used to authenticate with the service.
 
 -->
 <dom-module id="google-at-uh">
@@ -64,10 +64,10 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
     <iron-ajax
       id="uhJwtAjax"
       url="{{uhJwtUrl}}"
-      headers="{{computeHeaders(googleUser)}}"
+      headers="{{_computeHeaders(googleUser)}}"
       handle-as="json"
-      on-response="uhJwtAjaxResponseHandler"
-      on-error="uhJwtError"
+      on-response="_uhJwtAjaxResponseHandler"
+      on-error="_uhJwtError"
       last-response="{{lastUhJwtAjaxResponse}}"
       debounce-duration="300"
       loading="{{uhJwtAjaxLoading}}"></iron-ajax>
@@ -86,20 +86,54 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
       'use strict';
       Polymer({
         is: 'google-at-uh',
-        properties: {
-          //One way data-binding from parent to child
+          /**
+           * Fired when the Google Sign-In javascript library initialization fails.
+           *
+           * @event google-initialize-error
+           * @param {Object} error Contains the initialization error from the Google Sign-In library.
+           */
+
+          /**
+           * Fired when there's an error from the Google Sign-In javascript library signing in.
+           *
+           * @event google-sign-in-error
+           * @param {Object} error Contains the sign in error from the Google Sign-In javascript library.
+           */
+
+          /**
+           * Fired when there's an error attempting to get a UH JWT.
+           *
+           * @event uh-jwt-error
+           * @param {Object} error Contains the iron-ajax error from the call to the uhJwtUrl endpoint.
+           */
+
+          /**
+           * Fired when the service's `uhJwtUrl` endpoint has successfully returned a new UH JWT.
+           *
+           * @event new-uh-jwt
+           * @param {Object} uhUser Contains the new `uhUser` object (including the token itself).
+           */
+
+          properties: {
+          /**
+           * A Google Apps domain to limit the account picker to.  If `null`, all signed in Google accounts will be shown.
+           * For a a test system it should be `gtest.hawaii.edu` or `hawaii.edu` for production.
+           */
           hostedDomain: String,
 
-          //One way data-binding from parent to child
+          /**
+           * The client id (from Google) authorized for the service
+           */
           clientId: String,
 
-          //One way data-binding from parent to child
+          /**
+           * The protected (requires a Google id token) endpoint for the service to obtain a UH JWT.
+           */
           uhJwtUrl: String,
 
           /**
-           * One way data binding from child to parent
-           *
-           * Because of the structure of the gapi GoogleUser object, this is a data binding friendly copy.
+           * A copy of the gapi GoogleUser object. This is a data binding friendly copy because of the difficult structure of the gapi GoogleUser object.
+           * The object will be populated once the user is authorized and signed in with their Google account.
            */
           googleUser: {
             type: Object,
@@ -107,24 +141,25 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
             readOnly: true
           },
 
-          //One way data binding from child to parent
-          //The
+          /**
+           * Once a UH JWT has been obtained from the `uhJwtUrl` endpoint, this object will be populated with the UH user's data
+           * which includes the JWT token to authorize service calls.
+           */
           uhUser: {
             type: Object,
             notify: true,
             readOnly: true,
-            computed: '_computeUhUser(lastUhJwtAjaxResponse)'
+            computed: '_computeUhUser(lastUhJwtAjaxResponse)',
+            observer: '_uhUserChanged'
           },
-          //One way data binding from child to parent
-          initialized: {
-            type: Object,
-            notify: true,
-            readOnly: true,
-            value: false
-          },
-          //One way data binding from child to parent
+
+          /**
+           * The loading flag will be true when processing authentication from either Google or the `uhJwtUrl` endpoint.
+           * It's useful to data-bind to a indeterminate progress indicator to show the user the authentication is
+           * in process.
+           */
           loading: {
-            type: Object,
+            type: Boolean,
             notify: true,
             readOnly: true,
             value: false,
@@ -138,7 +173,12 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           }
         },
 
-        initializeGoogleAuth: function() {
+        /**
+         * The element will attempt to initiate authentication in its ready callback if its `clientId` has been set by then.
+         * If the values aren't bound by that time (for whatever reason), this method is available
+         * to manually kick the authentication process off when they are.
+         */
+        initiateAuthentication: function() {
           var self = this;
           gapi.load('auth2',
             function() {
@@ -157,7 +197,7 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
               auth2.then(self._initializeSuccess.bind(self), self._initializeFailure.bind(self));
                  //We don't need a success handler because we already have the googleAuth.currentUser listener
                 //If the user deny's the authorization request the error handler will be called.
-                auth2.attachClickHandler(self.$.signInButton, {}, null, self._signInFailure);
+                auth2.attachClickHandler(self.$.signInButton, {}, null, self._googleSignInFailure);
             });
         },
 
@@ -165,27 +205,27 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           if (googleAuth.isSignedIn.get()) {
             var googleUser = this._createDataBindingGoogleUser(googleAuth.currentUser.get());
             this._setGoogleUser(googleUser);
-            console.log('Initially logged in (google) as: ' + this.googleUser.email);
+            //console.log('Initially logged in (google) as: ' + this.googleUser.email);
             this.renewUhJwt();
           } else {
-            console.log('Not initially logged in (google).');
+            //console.log('Not initially logged in (google).');
             this._setGoogleUser(null);
             this.$.signInDialog.open();
           }
 
           googleAuth.currentUser.listen(this._auth2GoogleUserChanged.bind(this));
 
-          this._setInitialized(true);
-
         },
 
-        _initializeFailure: function(reason) {
-          console.log('Failure initializing gapi.auth2: ' + reason);
+        _initializeFailure: function(error) {
+          //console.log('Failure initializing gapi.auth2: ' + error);
+          this.fire('google-initialize-error', error);
         },
 
-        _signInFailure: function(error) {
-          console.log('Sign in failure:');
-          console.log(JSON.stringify(error, undefined, 2));
+        _googleSignInFailure: function(error) {
+          //console.log('Sign in failure:');
+          //console.log(JSON.stringify(error, undefined, 2));
+          this.fire('google-sign-in-error', error);
         },
 
         /**
@@ -195,11 +235,11 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           if (currentUser.isSignedIn()) {
             var googleUser = this._createDataBindingGoogleUser(currentUser);
             this._setGoogleUser(googleUser);
-            console.log('Logged in (google) as: ' + this.googleUser.email);
+            //console.log('Logged in (google) as: ' + this.googleUser.email);
             this.$.signInDialog.close();
             this.renewUhJwt();
           } else {
-            console.log('Logged out (google).');
+            //console.log('Logged out (google).');
             this._setGoogleUser(null);
             this.$.signInDialog.open();
           }
@@ -232,7 +272,7 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           return googleUser;
         } ,
 
-        computeHeaders: function(googleUser) {
+        _computeHeaders: function(googleUser) {
           if (googleUser) {
             var headers = {};
             headers.Authorization = googleUser.jwt;
@@ -240,7 +280,7 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           }
         },
 
-        //TODO just make a copy in the uhJwtAjaxResponseHandler to simplify.
+        //TODO just make a copy in the _uhJwtAjaxResponseHandler to simplify.
         //Tied directly to the result of the UH JWT ajax call.
         _computeUhUser: function(lastUhJwtAjaxResponse) {
           return lastUhJwtAjaxResponse;
@@ -250,6 +290,11 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           return uhJwtAjaxLoading;
         },
 
+        /**
+         * Signs the Google account out of the application and removes the `googleUser` and `uhUser` from memory.
+         * Any copies of the token will still be valid for authentication until they expire since there is (currently)
+         * no mechanism in place for invalidating them.
+         */
         signOut: function() {
           var auth2 = gapi.auth2.getAuthInstance();
           auth2.signOut();
@@ -258,18 +303,26 @@ then exchanges a Google ID Token to for a UH JWT that can be used to authenticat
           //Also note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.
           this.lastUhJwtAjaxResponse = null;
         },
+        /**
+         * Request a new JWT from the service endpoint (`uhJwtUrl`). If successful, the new-uh-jwt event will be triggered
+         * and the `uhUser` object itself will be updated.
+         */
         renewUhJwt: function() {
-          console.log('Getting new UH JWT.');
+          //console.log('Getting new UH JWT.');
           this.$.uhJwtAjax.generateRequest();
         },
-        uhJwtAjaxResponseHandler: function(e) {
-          console.log('Logged in (service) as: ' + this.uhUser.name);
+        _uhJwtAjaxResponseHandler: function(e) {
+          //console.log('Logged in (service) as: ' + this.uhUser.name);
           //TODO Set uhUser here instead of computing it based on lastUhJwtAjaxResponse.
         },
-        uhJwtError: function(/*e*/) {
+        _uhJwtError: function(e) {
           //TODO handle with message to user.
-          console.error('Error logging in to service.');
-        }
+          //console.error('Error logging in to service.');
+          this.fire('uh-jwt-error', e.detail);
+        },
+        _uhUserChanged: function(newUhUser, oldUhUser) {
+            this.fire('new-uh-jwt', newUhUser);
+        },
       });
     })();
   </script>

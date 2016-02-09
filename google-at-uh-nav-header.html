@@ -1,5 +1,10 @@
 <link rel="import" href="../iron-image/iron-image.html">
 
+<!--
+The `<google-at-uh-nav-header>` element displays information about the signed in user and is intended to be placed
+at the top of the navigation panel (as the first element of a `<paper-scroll-header-panel>`).
+
+-->
 <dom-module id="google-at-uh-nav-header">
 
   <template>
@@ -57,6 +62,10 @@
       Polymer({
         is: 'google-at-uh-nav-header',
         properties: {
+          /**
+           * This should be set from the `uhUser` object obtained from the `google-at-uh` element.
+           * The header's values will be set from this object.
+           */
           uhUser: {
             type: Object,
             notify: false,
@@ -64,26 +73,23 @@
             observer: '_uhUserChanged'
           }
         },
-
-        ready: function() {
-        },
         _uhUserChanged: function(newUhUser) {
           if (newUhUser) {
             if (newUhUser.photoUrl) {
               this.$.profileImage.src = newUhUser.photoUrl;
-              this.showGenericProfile(false);
+              this._showGenericProfile(false);
             } else {
-              this.showGenericProfile(true);
+              this._showGenericProfile(true);
             }
           } else {
-            this.hideBothProfileImages();
+            this._hideBothProfileImages();
           }
         },
-        showGenericProfile: function(showGenericProfile) {
-          this.$.profileImage.hidden = showGenericProfile;
-          this.$.genericProfile.hidden = !showGenericProfile;
+        _showGenericProfile: function(_showGenericProfile) {
+          this.$.profileImage.hidden = _showGenericProfile;
+          this.$.genericProfile.hidden = !_showGenericProfile;
         },
-        hideBothProfileImages: function() {
+        _hideBothProfileImages: function() {
           this.$.profileImage.hidden = true;
           this.$.genericProfile.hidden = true;
         }
