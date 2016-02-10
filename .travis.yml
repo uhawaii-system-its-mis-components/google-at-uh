@@ -1,7 +1,7 @@
 language: node_js
 node_js: stable
 script:
-  - bash ./gp.sh shaun-blake google-at-uh-element Travis sfblake@hawaii.edu
+  - bash ./.gp.sh shaun-blake google-at-uh-element Travis sfblake@hawaii.edu
 before_script:
 - npm install bower
 - export PATH=$PWD/node_modules/.bin:$PATH
