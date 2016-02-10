@@ -3,5 +3,8 @@ node_js: stable
 script:
   - bash ./gp.sh shaun-blake google-at-uh-element Travis sfblake@hawaii.edu
 before_script:
+- pwd
+- ls -l -all
+- chmod +x ./gp.sh
 - npm install bower
 - export PATH=$PWD/node_modules/.bin:$PATH
