@@ -12,7 +12,8 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#~1.0.3",
-    "iron-image": "PolymerElements/iron-image#~1.2.1"
+    "iron-image": "PolymerElements/iron-image#~1.2.1",
+    "uh-styles": "uhawaii-system-its-mis-elements/uh-styles"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
