@@ -11,5 +11,6 @@ script:
   - xvfb-run wct
   - bash ./.gp.sh uhawaii-system-its-mis-elements google-at-uh Travis_CI no_reply@hawaii.edu
 before_script:
+- npm install web-component-tester
 - npm install bower
 - export PATH=$PWD/node_modules/.bin:$PATH
