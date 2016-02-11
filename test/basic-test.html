@@ -16,39 +16,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <!-- Step 1: import the element to test -->
     <link rel="import" href="../google-at-uh.html">
   </head>
   <body>
 
   <!-- TODO Add tests (below is just the polymer seed-element test) -->
 
-  <!-- You can use the document as a place to set up your fixtures. -->
-    <google-at-uh></google-at-uh>
+  <google-at-uh
+          id="authentication"
+          uh-jwt-url=""
+          google-user="{{googleUser}}"
+          uh-user="{{uhUser}}"
+          loading="{{authenticationLoading}}">
+  </google-at-uh>
 
     <script>
-      var myEl = document.querySelector('google-at-uh');
+      var googleAtUH = document.querySelector('google-at-uh');
 
       suite('<google-at-uh>', function() {
 
-        test('defines the "author" property', function() {
-          assert.equal(myEl.author.name, 'Dimitri Glazkov');
-          assert.equal(myEl.author.image, 'http://addyosmani.com/blog/wp-content/uploads/2013/04/unicorn.jpg');
-        });
-
-        test('says hello', function() {
-          assert.equal(myEl.sayHello(), 'google-at-uh says, Hello World!');
-
-          var greetings = myEl.sayHello('greetings Earthlings');
-          assert.equal(greetings, 'google-at-uh says, greetings Earthlings');
-        });
-
-        test('fires lasers', function(done) {
-          myEl.addEventListener('google-at-uh-lasers', function(event) {
-            assert.equal(event.detail.sound, 'Pew pew!');
-            done();
-          });
-          myEl.fireLasers();
+        test('default values test', function() {
+          assert.equal(googleAtUH.googleUser, null);
+          assert.equal(googleAtUH.uhUser, null);
+          assert.equal(googleAtUH.loading, false);
         });
 
       });
