@@ -1,6 +1,14 @@
 language: node_js
 node_js: stable
+addons:
+  firefox: latest
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
 script:
+  - xvfb-run wct
   - bash ./.gp.sh uhawaii-system-its-mis-elements google-at-uh Travis_CI no_reply@hawaii.edu
 before_script:
 - npm install bower
