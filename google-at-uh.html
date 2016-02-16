@@ -141,7 +141,8 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
           googleUser: {
             type: Object,
             notify: true,
-            readOnly: true
+            readOnly: true,
+            value: null
           },
 
           /**
@@ -153,7 +154,8 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
             notify: true,
             readOnly: true,
             computed: '_computeUhUser(lastUhJwtAjaxResponse)',
-            observer: '_uhUserChanged'
+            observer: '_uhUserChanged',
+            value: null
           },
 
           /**
