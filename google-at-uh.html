@@ -71,7 +71,6 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
       handle-as="json"
       on-response="_uhJwtAjaxResponseHandler"
       on-error="_uhJwtError"
-      last-response="{{lastUhJwtAjaxResponse}}"
       debounce-duration="300"
       loading="{{uhJwtAjaxLoading}}"></iron-ajax>
       <paper-dialog id="signInDialog" modal>
@@ -153,7 +152,6 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
             type: Object,
             notify: true,
             readOnly: true,
-            computed: '_computeUhUser(lastUhJwtAjaxResponse)',
             observer: '_uhUserChanged',
             value: null
           },
@@ -285,12 +283,6 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
           }
         },
 
-        //TODO just make a copy in the _uhJwtAjaxResponseHandler to simplify.
-        //Tied directly to the result of the UH JWT ajax call.
-        _computeUhUser: function(lastUhJwtAjaxResponse) {
-          return lastUhJwtAjaxResponse;
-        },
-
         _computeLoading: function(uhJwtAjaxLoading) {
           return uhJwtAjaxLoading;
         },
@@ -304,9 +296,8 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
           var auth2 = gapi.auth2.getAuthInstance();
           auth2.signOut();
           this._setGoogleUser(null);
-          //The uhUser is computed from the lastUhJwtAjaxResponse so we need to null that out instead.
-          //Also note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.
-          this.lastUhJwtAjaxResponse = null;
+          //Note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.
+          this._setUhUser(null);
         },
         /**
          * Request a new JWT from the service endpoint (`uhJwtUrl`). If successful, the new-uh-jwt event will be triggered
@@ -317,11 +308,23 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
           this.$.uhJwtAjax.generateRequest();
         },
         _uhJwtAjaxResponseHandler: function(e) {
+          var uhUser = e.detail.response;
+          if(uhUser && uhUser.uhJwtExpireTime) {
+            var msUntilExpired = e.detail.response.uhJwtExpireTime - new Date().getTime();
+            //If the timeout is within 5 minutes just renew when it expires (or ASAP if it's already expired).
+            var msUntilRenew = msUntilExpired;
+            //If the expiration is longer than 5 minutes from now renew 5 minutes early
+            if(msUntilExpired > 300000) {
+              msUntilRenew = msUntilExpired - 300000;
+            }
+
+            //console.log('UH JWT renewal scheduled in ' + msUntilRenew / 1000 + ' seconds');
+            setTimeout(this.renewUhJwt.bind(this), msUntilRenew);
+          }
+          this._setUhUser(uhUser);
           //console.log('Logged in (service) as: ' + this.uhUser.name);
-          //TODO Set uhUser here instead of computing it based on lastUhJwtAjaxResponse.
         },
         _uhJwtError: function(e) {
-          //TODO handle with message to user.
           //console.error('Error logging in to service.');
           this.fire('uh-jwt-error', e.detail);
         },
