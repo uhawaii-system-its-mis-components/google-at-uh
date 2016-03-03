@@ -336,6 +336,7 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
         },
         _uhJwtError: function(e) {
           //console.error('Error logging in to service.');
+          this._setUhUser(null);
           this.fire('uh-jwt-error', e.detail);
         },
         _uhUserChanged: function(newUhUser, oldUhUser) {
