@@ -312,15 +312,24 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
           var uhUser = e.detail.response;
           if(uhUser && uhUser.uhJwtExpireTime) {
             var msUntilExpired = e.detail.response.uhJwtExpireTime - new Date().getTime();
-            //If the timeout is within 5 minutes just renew when it expires (or ASAP if it's already expired).
-            var msUntilRenew = msUntilExpired;
+            var msUntilRenew = null;
             //If the expiration is longer than 5 minutes from now renew 5 minutes early
             if(msUntilExpired > 300000) {
               msUntilRenew = msUntilExpired - 300000;
             }
+            //If the expiration is longer than 60 seconds from now renew 30 seconds early
+            else if(msUntilExpired >= 60000) {
+              msUntilRenew = msUntilExpired - 30000;
+            }
 
-            //console.log('UH JWT renewal scheduled in ' + msUntilRenew / 1000 + ' seconds');
-            setTimeout(this.renewUhJwt.bind(this), msUntilRenew);
+            if(msUntilRenew) {
+                //console.log('UH JWT renewal scheduled in ' + msUntilRenew / 1000 + ' seconds');
+                setTimeout(this.renewUhJwt.bind(this), msUntilRenew);
+            }
+            else {
+              console.warn("Not scheduling automatic UH JWT renewal because expiration is too short.")
+            }
+
           }
           this._setUhUser(uhUser);
           //console.log('Logged in (service) as: ' + this.uhUser.name);
