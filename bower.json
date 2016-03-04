@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "Polymer element to integrate Google@UH with a polymer app.",
   "main": "google-at-uh.html",
-  "homepage": "https://github.com/uhawaii-system-its-mis-elements/google-at-uh/",
+  "homepage": "https://github.com/uhawaii-system-its-mis-components/google-at-uh/",
   "ignore": [
     "/.*",
     "/test/",
@@ -13,7 +13,7 @@
     "polymer": "Polymer/polymer#^1.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#~1.0.3",
     "iron-image": "PolymerElements/iron-image#~1.2.1",
-    "uh-styles": "uhawaii-system-its-mis-elements/uh-styles"
+    "uh-styles": "uhawaii-system-its-mis-components/uh-styles"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
@@ -21,6 +21,6 @@
     "paper-input": "PolymerElements/paper-input#~1.1.5",
     "paper-toast": "PolymerElements/paper-toast#~1.1.3",
     "paper-spinner": "PolymerElements/paper-spinner#~1.1.0",
-    "count-down": "uhawaii-system-its-mis-elements/count-down"
+    "count-down": "uhawaii-system-its-mis-components/count-down"
   }
 }
