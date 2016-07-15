@@ -3,6 +3,7 @@ sudo: required
 before_script:
   - npm install -g bower polylint web-component-tester
   - bower install
+  #TODO fix this
   #- polylint
 node_js: stable
 addons:
@@ -14,6 +15,7 @@ addons:
       - google-chrome-stable
 script:
   - xvfb-run wct
-  - "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"
+  #TODO Learn what this does and see if we need it.
+  #- "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"
   - bash ./.gp.sh uhawaii-system-its-mis-components google-at-uh Travis_CI no_reply@hawaii.edu
 dist: trusty
