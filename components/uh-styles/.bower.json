@@ -1,0 +1,30 @@
+{
+  "name": "uh-styles",
+  "description": "Polymer element to integrate UH styles and themes with a polymer app.",
+  "main": "uh-styles.html",
+  "homepage": "https://github.com/uhawaii-system-its-mis-components/uh-styles/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*",
+    "paper-input": "PolymerElements/paper-input#~1.1.5",
+    "paper-toast": "PolymerElements/paper-toast#~1.1.3",
+    "paper-spinner": "PolymerElements/paper-spinner#~1.1.0"
+  },
+  "_release": "e2cb264968",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "e2cb2649682520c159bc4ceb603af69ce879c7f7"
+  },
+  "_source": "https://github.com/uhawaii-system-its-mis-components/uh-styles.git",
+  "_target": "*",
+  "_originalSource": "uhawaii-system-its-mis-components/uh-styles"
+}

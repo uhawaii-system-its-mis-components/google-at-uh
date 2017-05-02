@@ -1,0 +1,29 @@
+<!-- Currently this file needs to be manually edited for each environment -->
+<dom-module id="app-config">
+  <script>
+    (function() {
+      var appConfig = {
+        'clientId': '<%clientId%>',
+        'hostedDomain': '<%hostedDomain%>',
+        'uhJwtUrl': '<%uhJwtUrl%>'
+      };
+
+      Polymer({
+        is: 'app-config',
+        properties: {
+          //One way data binding from child to parent
+          appConfig: {
+            type: Object,
+            notify: true,
+            readOnly: true,
+            value: null
+          },
+        },
+        ready: function() {
+          // copy global values into instance properties
+          this._setAppConfig(appConfig);
+        }
+      });
+    })();
+  </script>
+</dom-module>

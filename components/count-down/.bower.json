@@ -1,0 +1,28 @@
+{
+  "name": "count-down",
+  "description": "A count down timer component that uses countdownjs.",
+  "main": "count-down.html",
+  "homepage": "https://github.com/uhawaii-system-its-mis-components/count-down/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*",
+    "uh-styles": "uhawaii-system-its-mis-components/uh-styles"
+  },
+  "_release": "6e64210a94",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "6e64210a944bcef1908077eca339efc6d5031fe3"
+  },
+  "_source": "https://github.com/uhawaii-system-its-mis-components/count-down.git",
+  "_target": "*",
+  "_originalSource": "uhawaii-system-its-mis-components/count-down"
+}

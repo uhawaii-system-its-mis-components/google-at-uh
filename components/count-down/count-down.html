@@ -1,0 +1,72 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<script src="countdown.min.js"></script>
+
+<!--
+    A simple polymer element that displays a count down timer using the countdownjs from http://countdownjs.org.
+
+    See the <a href="test/index.html">tests page</a> for test results (only if running locally using `polyserv`).
+
+    @demo demo/index.html
+-->
+<dom-module id="count-down">
+  <template>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'count-down',
+
+        properties: {
+          /**
+           * The future date to countdown to.
+           */
+          to: {
+            type: Date,
+            observer: '_toChanged'
+          },
+          /**
+           * A flag to indicate whether the countdown has gone past the `to` Date.
+           */
+          expired: {
+            type: Boolean,
+            notify: true,
+            readOnly: true
+          }
+        },
+
+        _timerId: null,
+
+        _toChanged: function(newTo) {
+          /*jslint bitwise: true */
+          /* globals countdown */
+          if (this.timerId) {
+            window.clearInterval(this.timerId);
+          }
+          if (newTo) {
+            var self = this;
+            this.timerId =
+              countdown(
+                newTo,
+                (function(ts) {
+                  if (self.to <= new Date()) {
+                    window.clearInterval(this.timerId);
+                    this.innerHTML = 'Expired';
+                    return;
+                  }
+                  this.innerHTML = ts.toHTML();
+                }).bind(this),
+                countdown.HOURS | countdown.MINUTES | countdown.SECONDS);
+          } else {
+            this.innerHTML = '';
+          }
+        }
+      });
+    })();
+  </script>
+
+</dom-module>

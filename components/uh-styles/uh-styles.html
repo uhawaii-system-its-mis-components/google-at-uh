@@ -1,0 +1,31 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/typography.html">
+
+<!--
+
+Polymer shared `style module` for common UH styles. See https://www.polymer-project.org/1.0/docs/devguide/styling.html#style-modules
+Rules found in uh-styles.html can be used to style a specific html element instead of changing all elements of that type.
+For example - a style rule that lets you create a small button as needed will be in uh-styles.html while a rule that
+changes the default look of all buttons to be small will be in uh-theme.html.
+
+@demo demo/index.html
+
+ -->
+
+<dom-module id="uh-styles">
+    <template>
+      <style>
+        /* Taken from PSK shared-styles.html */
+
+        .section-title {
+          @apply(--paper-font-display2);
+        }
+
+        @media (max-width: 600px) {
+          .section-title {
+            font-size: 24px!important;
+          }
+        }
+      </style>
+    </template>
+  </dom-module>
