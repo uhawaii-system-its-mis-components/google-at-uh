@@ -242,10 +242,8 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
             this.$.signInDialog.close();
             this.renewUhJwt();
           } else {
-            //console.log('Logged out (google).');
-            this._setGoogleUser(null);
-            this.$.signInDialog.open();
-            this._setUhUser(null);
+            //The user signs out of their Google account.
+            this._signOutUsers();
           }
         },
 
@@ -295,10 +293,16 @@ See the <a href="test/index.html">tests page</a> for test results (only if runni
          */
         signOut: function() {
           var auth2 = gapi.auth2.getAuthInstance();
-          auth2.signOut();
-          this._setGoogleUser(null);
-          //Note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.
-          this._setUhUser(null);
+          auth2.signOut().then(function(param1, param2) {
+              //The user will still be logged in to Google so _auth2GoogleUserChanged is not called.
+              this._signOutUsers();
+          }.bind(this));
+        },
+        _signOutUsers: function() {
+            this._setGoogleUser(null);
+            //Note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.;
+            this._setUhUser(null);
+            this.$.signInDialog.open()
         },
         /**
          * Request a new JWT from the service endpoint (`uhJwtUrl`). If successful, the new-uh-jwt event will be triggered
