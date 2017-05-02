@@ -1,6 +1,6 @@
 {
   "name": "google-at-uh",
-  "version": "1.1.1",
+  "version": "v17.05.02",
   "description": "Polymer element to integrate Google@UH with a polymer app.",
   "main": "google-at-uh.html",
   "homepage": "https://github.com/uhawaii-system-its-mis-components/google-at-uh/",
