@@ -162,6 +162,11 @@
               <google-at-uh-nav-header uhUser="${uhUser}"></google-at-uh-nav-header>
             </div>
 
+            <div style="width: 100%; display:inline-flex; flex-direction:row;">
+              <div style="flex: 1"></div>
+              <paper-button on-tap="${(e) => this._signOut()}" class="accent">Sign Out</paper-button>
+            </div>
+
           </div>
 
           <div id="tokensSection" class="card paper-font-body1">
@@ -179,8 +184,8 @@
               <dd class="paper-font-code1"><count-down to="${this._googleJwtExpiresDate(googleUser)}"></count-down></dd>
             </dl>
 
-            <div class="layout horizontal">
-              <div class="flex"></div>
+            <div style="width: 100%; display:inline-flex; flex-direction:row;">
+              <div style="flex: 1"></div>
               <paper-button on-tap="${(e) => this._refreshUHToken()}" class="accent">New UH Token</paper-button>
             </div>
           </div>
@@ -268,6 +273,11 @@
             <paper-spinner-lite active></paper-spinner-lite>
           </paper-toast>
         `;
+      }
+
+      _signOut() {
+        let authentication = this.shadowRoot.querySelector('#authentication');
+        authentication.signOut();
       }
 
       _refreshUHToken() {
