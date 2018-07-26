@@ -1,0 +1,90 @@
+version: '3.6'
+services:
+  polymer-cli:
+    image: google-at-uh_polymer-cli
+    build:
+      context: ./
+      args:
+        polymerCLIVersion: polymer-cli#1.7.7
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+    deploy:
+      labels:
+        com.df.notify: "true"
+        com.df.distribute: "true"
+        com.df.servicePath: "/google-at-uh"
+        com.df.reqPathSearch: "/google-at-uh"
+        com.df.reqPathReplace: "/"
+        com.df.port: "8081"
+    command: polymer serve --hostname 0.0.0.0
+  fake-identity-service:
+    image: registry.pvt.hawaii.edu/google-at-uh-auth/fake-identity-service:18.06.05
+    secrets:
+      - source: google-at-uh-grouper-username
+        target: identity-service-grouper-username
+      - source: google-at-uh-grouper-password
+        target: identity-service-grouper-password
+      - source: google-at-uh-jwt-signing-keystore.jks
+        target: identity-service-jwt-signing-keystore.jks
+      - source: google-at-uh-jwt-signing-keystore-password
+        target: identity-service-jwt-signing-keystore-password
+    configs:
+      - source: google-at-uh-allowed-hosted-domains
+        target: /run/configs/allowed-hosted-domains
+      - source: google-at-uh-base-auth-groups-folder
+        target: /run/configs/base-auth-groups-folder
+      - source: google-at-uh-server-key-alias
+        target: /run/configs/server-key-alias
+      - source: google-at-uh-trusted-client-ids
+        target: /run/configs/trusted-client-ids
+    healthcheck:
+        test: ["CMD", "wget", "-O-", "http://localhost:8080/fake-identity-service/uh_jwt"]
+        interval: 15s
+        timeout: 10s
+        retries: 10
+    deploy:
+      labels:
+        com.df.notify: "true"
+        com.df.distribute: "true"
+        com.df.servicePath: "/google-at-uh/fake-identity-service"
+        com.df.reqPathSearch: "/google-at-uh/fake-identity-service"
+        com.df.reqPathReplace: "/fake-identity-service"
+        com.df.port: "8080"
+  proxy:
+    image: vfarcic/docker-flow-proxy:18.04.06-12
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    environment:
+      - LISTENER_ADDRESS=google-at-uh_swarm-listener
+      - MODE=swarm
+      - DEBUG=true
+  swarm-listener:
+    image: vfarcic/docker-flow-swarm-listener:18.04.12-7
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DF_NOTIFY_CREATE_SERVICE_URL=http://google-at-uh_proxy:8080/v1/docker-flow-proxy/reconfigure
+      - DF_NOTIFY_REMOVE_SERVICE_URL=http://google-at-uh_proxy:8080/v1/docker-flow-proxy/remove
+
+configs:
+  google-at-uh-allowed-hosted-domains:
+    file: ./env/dev/configs/google-at-uh-allowed-hosted-domains
+  google-at-uh-base-auth-groups-folder:
+    file: ./env/dev/configs/google-at-uh-base-auth-groups-folder
+  google-at-uh-server-key-alias:
+    file: ./env/dev/configs/google-at-uh-server-key-alias
+  google-at-uh-trusted-client-ids:
+    file: ./env/dev/configs/google-at-uh-trusted-client-ids
+
+secrets:
+  google-at-uh-grouper-username:
+    file: ./env/dev/secrets/google-at-uh-grouper-username
+  google-at-uh-grouper-password:
+    file: ./env/dev/secrets/google-at-uh-grouper-password
+  google-at-uh-jwt-signing-keystore.jks:
+    file: ./env/dev/secrets/google-at-uh-jwt-signing-keystore.jks
+  google-at-uh-jwt-signing-keystore-password:
+    file: ./env/dev/secrets/google-at-uh-jwt-signing-keystore-password

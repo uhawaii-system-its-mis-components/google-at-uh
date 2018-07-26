@@ -1,0 +1,26 @@
+{
+  "name": "google-at-uh",
+  "homepage": "https://github.com/uhawaii-system-its-mis-components/google-at-uh",
+  "bugs": "https://github.com/uhawaii-system-its-mis-components/google-at-uh/issues",
+  "files": [
+    "google-at-uh.js"
+  ],
+  "dependencies": {
+    "@polymer/iron-ajax": "^3.0.0-pre.21",
+    "@polymer/iron-icon": "^3.0.0-pre.21",
+    "@polymer/iron-icons": "^3.0.0-pre.21",
+    "@polymer/iron-image": "^3.0.0-pre.21",
+    "@polymer/lit-element": "^0.5.2",
+    "@polymer/paper-button": "^3.0.0-pre.21",
+    "@polymer/paper-dialog": "^3.0.0-pre.21",
+    "@polymer/paper-spinner": "^3.0.0-pre.21",
+    "@polymer/paper-styles": "^3.0.0-pre.21",
+    "@polymer/paper-toast": "^3.0.0-pre.21",
+    "@polymer/paper-toolbar": "^3.0.0-pre.21",
+    "@webcomponents/webcomponentsjs": "^2.0.2",
+    "count-down": "uhawaii-system-its-mis-components/count-down"
+  },
+  "devDependencies": {
+    "@material/card": "0.37.1"
+  }
+}
