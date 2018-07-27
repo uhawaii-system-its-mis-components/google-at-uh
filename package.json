@@ -1,7 +1,7 @@
 {
-  "name": "UniversityOfHawaii/google-at-uh",
-  "homepage": "https://github.com/uhawaii-system-its-mis-components/google-at-uh",
-  "bugs": "https://github.com/uhawaii-system-its-mis-components/google-at-uh/issues",
+  "name": "UniversityOfHawaii/wc-google-at-uh",
+  "homepage": "https://github.com/UniversityOfHawaii/wc-google-at-uh",
+  "bugs": "https://github.com/UniversityOfHawaii/wc-google-at-uh/issues",
   "files": [
     "google-at-uh.js"
   ],
