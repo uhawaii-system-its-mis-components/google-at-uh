@@ -7,8 +7,6 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-styles/typography.js';
 
-import 'count-down/count-down.js'
-
 import './google-at-uh-button.js';
 
 
