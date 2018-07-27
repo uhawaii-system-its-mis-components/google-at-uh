@@ -263,7 +263,7 @@
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@webcomponents/webcomponentsjs/-/webcomponentsjs-2.0.3.tgz#5988527650d24e6bf2e40c7af4f7ca54141afbde"
 
-count-down@uhawaii-system-its-mis-components/count-down:
+count-down@uhawaii-system-its-mis-components/count-down#2018.7.24:
   version "2018.7.24"
   resolved "https://codeload.github.com/uhawaii-system-its-mis-components/count-down/tar.gz/986972680482a3ae1908e6846a21315af9248a19"
   dependencies:
