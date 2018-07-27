@@ -18,14 +18,14 @@ class GoogleAtUHNavHdeader extends LitElement {
 
   _render({uhUser}) {
     // Default to &nbsp; to keep content size
-    let uhUserName = uhUser.name ? uhUser.name : html`&nbsp;`;
-    let uhUserEmail = uhUser.email ? uhUser.email : html`&nbsp;`;
+    let uhUserName = uhUser && uhUser.name ? uhUser.name : html`&nbsp;`;
+    let uhUserEmail = uhUser && uhUser.email ? uhUser.email : html`&nbsp;`;
 
     let avatar = html`
       <div id="genericAvatar"><iron-icon icon="social:person"></iron-icon></div>
     `;
 
-    if (uhUser.photoUrl) {
+    if (uhUser && uhUser.photoUrl) {
       avatar = html`
         <iron-image id="personalAvatar" sizing="cover" src="${uhUser.photoUrl}"></iron-image>
       `;
