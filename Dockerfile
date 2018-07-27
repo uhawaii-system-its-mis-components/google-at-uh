@@ -4,7 +4,7 @@ ARG polymerCLIVersion=polymer-cli
 
 RUN yarn global add $polymerCLIVersion
 
-RUN apk --update --no-cache add git
+RUN apk --update --no-cache add git openssh-client
 
 USER node
 

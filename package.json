@@ -1,5 +1,5 @@
 {
-  "name": "UniversityOfHawaii/wc-google-at-uh",
+  "name": "@UniversityOfHawaii/wc-google-at-uh",
   "homepage": "https://github.com/UniversityOfHawaii/wc-google-at-uh",
   "bugs": "https://github.com/UniversityOfHawaii/wc-google-at-uh/issues",
   "files": [
@@ -21,6 +21,6 @@
     "@polymer/paper-toast": "^3.0.0-pre.21",
     "@webcomponents/webcomponentsjs": "^2.0.2",
     "count-down": "uhawaii-system-its-mis-components/count-down#2018.7.24",
-    "UniversityOfHawaii/simple-app": "UniversityOfHawaii/wc-simple-app"
+    "@UniversityOfHawaii/simple-app": "UniversityOfHawaii/wc-simple-app"
   }
 }

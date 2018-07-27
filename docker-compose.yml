@@ -8,6 +8,7 @@ services:
         polymerCLIVersion: polymer-cli#1.7.7
     volumes:
       - ./:/workspace
+      - ~/.ssh:/home/node/.ssh
     working_dir: /workspace
     deploy:
       labels:
