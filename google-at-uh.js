@@ -119,7 +119,7 @@ class GoogleAtUH extends LitElement {
           <paper-toolbar>
               <div id="title" slot="top" class="title">Sign In</div>
           </paper-toolbar>
-          <iron-image id="logo" sizing="contain" preload src="images/university-logo-stacked.jpg"></iron-image>
+          <iron-image id="logo" sizing="contain" preload src="node_modules/@UniversityOfHawaii/google-at-uh/images/university-logo-stacked.jpg"></iron-image>
           <p id="helpLink"><a target="_blank" href="https://www.hawaii.edu/username"><iron-icon icon="help"></iron-icon></a></p>
           <p class="paper-font-body1">Sign in with your UH@Google account to get access to university resources.</p>
           <google-at-uh-button id="signInButton" on-tap="${() => this._signInButtonHandler()}"></google-at-uh-button>

@@ -32,7 +32,7 @@ class GoogleAtUHButton extends LitElement {
           @apply --paper-font-body2;
         }
       </style>
-      <paper-button raised><iron-image src="images/google-sign-in-logo.svg"></iron-image><span id="buttonText" class="paper-font-body2" style="font-size: 13px;">${buttonText}</span></paper-button>
+      <paper-button raised><iron-image src="node_modules/@UniversityOfHawaii/google-at-uh/images/google-sign-in-logo.svg"></iron-image><span id="buttonText" class="paper-font-body2" style="font-size: 13px;">${buttonText}</span></paper-button>
     `;
   }
 

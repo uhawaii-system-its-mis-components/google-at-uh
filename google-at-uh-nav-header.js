@@ -37,7 +37,7 @@ class GoogleAtUHNavHdeader extends LitElement {
         display: block;
         width: 100%;
         height: 128px;
-        background: url(images/nav_header_bg.png);
+        background: url(node_modules/@UniversityOfHawaii/google-at-uh/images/nav_header_bg.png);
         background-size: cover;
         position: relative;
         color: white;
