@@ -14,6 +14,15 @@ shell:
 	@echo
 	@echo "$(yellow)google-at-uh$(default)"
 	@echo
+	@echo "Creating symbolic link in node_modules for image assests."
+	@echo "This allows the local version to reference them as they would be included in another project."
+	@echo
+	rm -f node_modules/@UniversityOfHawaii/google-at-uh/images
+	mkdir -p node_modules/@UniversityOfHawaii/google-at-uh
+	cd node_modules/@UniversityOfHawaii/google-at-uh/ && ln -fs ../../../images images
+	@echo
+	@echo "Done creating symblic link."
+	@echo
 	@echo "Start the server with:"
 	@echo "$(green)polymer serve --hostname 0.0.0.0$(default)"
 	@echo "Then request $(blue)http://localhost/$(default)"
