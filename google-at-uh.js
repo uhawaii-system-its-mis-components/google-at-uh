@@ -172,7 +172,7 @@ class GoogleAtUH extends LitElement {
   }
 
   _initializeFailure(error) {
-    this.dispatchEvent(new CustomEvent('google-initialize-error', {details: error.details, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('google-initialize-error', {detail: error.details, bubbles: true, composed: true }));
     this.dispatchEvent(new CustomEvent('finished-authenticating', {bubbles: true, composed: true }));
   }
 
