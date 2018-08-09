@@ -1,0 +1,352 @@
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+
+<link rel="import" href="google-at-uh-button.html">
+
+<!--
+`<google-at-uh>` provides authentication and authorization integration with a service that uses
+<a href="https://github.com/UniversityOfHawaii/google-at-uh-auth">`google-at-uh-auth`</a>.
+
+See the <a href="demo/index.html">demo page</a> for an example of how to use it.
+
+The component use the <a href="https://developers.google.com/identity/sign-in/web/reference">Google Sign-In javascript library</a>
+to allow the user to sign in using a Google account. Once the user has signed in with Google the component
+then exchanges a Google ID Token for a UH JWT that can be used to authenticate with the service.
+
+See the <a href="test/index.html">tests page</a> for test results (only if running locally using `polyserv`).
+
+@demo demo/index.html
+
+-->
+<dom-module id="google-at-uh">
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <script src="https://apis.google.com/js/api:client.js"></script>
+  <template>
+      <style is="custom-style">
+          paper-dialog {
+              --paper-dialog-background-color: white;
+              /* 2*24px (for left and right padding of iron-image) = 48px more than the logo width*/
+              width: 298px;
+              /* 8px for the spec and 2px to offset the button shadow */
+              padding-bottom: 10px;
+              text-align: center;
+          }
+          paper-dialog p {
+              text-align: left;
+          }
+          paper-dialog paper-toolbar {
+            margin-top: 0;
+            padding: 0;
+            --paper-toolbar-background: var(--default-primary-color);
+            --paper-toolbar-color: var(--text-primary-color);
+          }
+          #title {
+              margin-left: 8px;
+          }
+          #logo {
+              width: 250px;
+              height: 270px;
+              margin-top: 0;
+          }
+          paper-icon-item {
+              white-space: nowrap;
+          }
+          #helpLink {
+              float:right;
+              margin-bottom:0px;
+              padding-left: 4px;
+          }
+          #helpLink iron-icon {
+              width: 20px;
+              height: 20px;
+          }
+
+      </style>
+    <iron-ajax
+      id="uhJwtAjax"
+      url="{{uhJwtUrl}}"
+      headers="{{_computeHeaders(googleUser)}}"
+      handle-as="json"
+      on-response="_uhJwtAjaxResponseHandler"
+      on-error="_uhJwtError"
+      debounce-duration="300"
+      loading="{{uhJwtAjaxLoading}}"></iron-ajax>
+      <paper-dialog id="signInDialog" modal>
+          <paper-toolbar>
+              <div id="title" class="paper-font-subhead">Sign In</div>
+          </paper-toolbar>
+          <iron-image id="logo" sizing="contain" preload src="images/university-logo-stacked.jpg"></iron-image>
+          <p id="helpLink"><a target="_blank" href="https://www.hawaii.edu/username"><iron-icon icon="help"></iron-icon></a></p>
+          <p class="paper-font-body1">Sign in with your UH@Google account to get access to university resources.</p>
+          <google-at-uh-button id="signInButton"></google-at-uh-button>
+      </paper-dialog>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'google-at-uh',
+          /**
+           * Fired when the Google Sign-In javascript library initialization fails.
+           *
+           * @event google-initialize-error
+           * @param {Object} error Contains the initialization error from the Google Sign-In library.
+           */
+
+          /**
+           * Fired when there's an error from the Google Sign-In javascript library signing in.
+           *
+           * @event google-sign-in-error
+           * @param {Object} error Contains the sign in error from the Google Sign-In javascript library.
+           */
+
+          /**
+           * Fired when there's an error attempting to get a UH JWT.
+           *
+           * @event uh-jwt-error
+           * @param {Object} error Contains the iron-ajax error from the call to the uhJwtUrl endpoint.
+           */
+
+          /**
+           * Fired when the service's `uhJwtUrl` endpoint has successfully returned a new UH JWT.
+           *
+           * @event new-uh-jwt
+           * @param {Object} uhUser Contains the new `uhUser` object (including the token itself).
+           */
+
+          properties: {
+          /**
+           * A Google Apps domain to limit the account picker to.  If `null`, all signed in Google accounts will be shown.
+           * For a a test system it should be `gtest.hawaii.edu` or `hawaii.edu` for production.
+           */
+          hostedDomain: String,
+
+          /**
+           * The client id (from Google) authorized for the service
+           */
+          clientId: String,
+
+          /**
+           * The protected (requires a Google id token) endpoint for the service to obtain a UH JWT.
+           */
+          uhJwtUrl: String,
+
+          /**
+           * A copy of the gapi GoogleUser object. This is a data binding friendly copy because of the difficult structure of the gapi GoogleUser object.
+           * The object will be populated once the user is authorized and signed in with their Google account.
+           */
+          googleUser: {
+            type: Object,
+            notify: true,
+            readOnly: true,
+            value: null
+          },
+
+          /**
+           * Once a UH JWT has been obtained from the `uhJwtUrl` endpoint, this object will be populated with the UH user's data
+           * which includes the JWT token to authorize service calls.
+           */
+          uhUser: {
+            type: Object,
+            notify: true,
+            readOnly: true,
+            observer: '_uhUserChanged',
+            value: null
+          },
+
+          /**
+           * The loading flag will be true when processing authentication from either Google or the `uhJwtUrl` endpoint.
+           * It's useful to data-bind to a indeterminate progress indicator to show the user the authentication is
+           * in process.
+           */
+          loading: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: false,
+            computed: '_computeLoading(uhJwtAjaxLoading)'
+          }
+        },
+
+        ready: function() {
+          if(this.clientId) {
+              this.initiateAuthentication();
+          }
+        },
+
+        /**
+         * The element will attempt to initiate authentication in its ready callback if its `clientId` has been set by then.
+         * If the values aren't bound by that time (for whatever reason), this method is available
+         * to manually kick the authentication process off when they are.
+         */
+        initiateAuthentication: function() {
+          var self = this;
+          gapi.load('auth2',
+            function() {
+              /*jshint camelcase: false */
+              // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+
+              // Retrieve the singleton for the GoogleAuth library and set up the client.
+              var initParams = {
+                client_id: self.clientId,
+                scope: 'profile email'
+              };
+              if (self.hostedDomain !== null) {
+                initParams.hosted_domain = self.hostedDomain;
+              }
+              var auth2 = gapi.auth2.init(initParams);
+              auth2.then(self._initializeSuccess.bind(self), self._initializeFailure.bind(self));
+                 //We don't need a success handler because we already have the googleAuth.currentUser listener
+                //If the user deny's the authorization request the error handler will be called.
+                auth2.attachClickHandler(self.$.signInButton, {}, null, self._googleSignInFailure);
+            });
+        },
+
+        _initializeSuccess: function(googleAuth) {
+          if (googleAuth.isSignedIn.get()) {
+            var googleUser = this._createDataBindingGoogleUser(googleAuth.currentUser.get());
+            this._setGoogleUser(googleUser);
+            //console.log('Initially logged in (google) as: ' + this.googleUser.email);
+            this.renewUhJwt();
+          } else {
+            //console.log('Not initially logged in (google).');
+            this._setGoogleUser(null);
+            this.$.signInDialog.open();
+          }
+
+          googleAuth.currentUser.listen(this._auth2GoogleUserChanged.bind(this));
+
+        },
+
+        _initializeFailure: function(error) {
+          //console.log('Failure initializing gapi.auth2: ' + error);
+          this.fire('google-initialize-error', error);
+        },
+
+        _googleSignInFailure: function(error) {
+          //console.log('Sign in failure:');
+          //console.log(JSON.stringify(error, undefined, 2));
+          this.fire('google-sign-in-error', error);
+        },
+
+        /**
+         * Google's gapi will automatically call this method about 5 minutes before the current token expires.
+         */
+        _auth2GoogleUserChanged: function(currentUser) {
+          if (currentUser.isSignedIn()) {
+            var googleUser = this._createDataBindingGoogleUser(currentUser);
+            this._setGoogleUser(googleUser);
+            //console.log('Logged in (google) as: ' + this.googleUser.email);
+            this.$.signInDialog.close();
+            this.renewUhJwt();
+          } else {
+            //The user signs out of their Google account.
+            this._signOutUsers();
+          }
+        },
+
+        /**
+         * The gapi.auth2 GoogleUser is difficult to work with because all the values are buried in method calls.
+         * This method copies the interesting values from the gapi.auth2 GoogleUser into a data binding friendly format.
+         */
+        _createDataBindingGoogleUser: function(originalGoogleUser) {
+          /*jshint camelcase: false */
+          // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+          if (originalGoogleUser === null) {
+            return null;
+          }
+          var basicProfile = originalGoogleUser.getBasicProfile();
+          var authResponse = originalGoogleUser.getAuthResponse();
+          var googleUser = {
+            'name': basicProfile.getName(),
+            'givenName': basicProfile.getGivenName(),
+            'familyName': basicProfile.getFamilyName(),
+            'email': basicProfile.getEmail(),
+            'id': basicProfile.getId(),
+            'photoUrl': basicProfile.getImageUrl(),
+            'jwt': authResponse.id_token,
+            'expiresIn': authResponse.expires_in,
+            'expiresAt': authResponse.expires_at,
+            'hostedDomain': originalGoogleUser.getHostedDomain()
+          };
+          return googleUser;
+        } ,
+
+        _computeHeaders: function(googleUser) {
+          if (googleUser) {
+            var headers = {};
+            headers.Authorization = googleUser.jwt;
+            return headers;
+          }
+        },
+
+        _computeLoading: function(uhJwtAjaxLoading) {
+          return uhJwtAjaxLoading;
+        },
+
+        /**
+         * Signs the Google account out of the application and removes the `googleUser` and `uhUser` from memory.
+         * Any copies of the token will still be valid for authentication until they expire since there is (currently)
+         * no mechanism in place for invalidating them.
+         */
+        signOut: function() {
+          var auth2 = gapi.auth2.getAuthInstance();
+          auth2.signOut().then(function(param1, param2) {
+              //The user will still be logged in to Google so _auth2GoogleUserChanged is not called.
+              this._signOutUsers();
+          }.bind(this));
+        },
+        _signOutUsers: function() {
+            this._setGoogleUser(null);
+            //Note that the any non-expired UH JWTs will still be valid.  There is no logout on the server.;
+            this._setUhUser(null);
+            this.$.signInDialog.open()
+        },
+        /**
+         * Request a new JWT from the service endpoint (`uhJwtUrl`). If successful, the new-uh-jwt event will be triggered
+         * and the `uhUser` object itself will be updated.
+         */
+        renewUhJwt: function() {
+          //console.log('Getting new UH JWT.');
+          this.$.uhJwtAjax.generateRequest();
+        },
+        _uhJwtAjaxResponseHandler: function(e) {
+          var uhUser = e.detail.response;
+          if(uhUser && uhUser.uhJwtExpireTime) {
+            var msUntilExpired = e.detail.response.uhJwtExpireTime - new Date().getTime();
+            var msUntilRenew = null;
+            //If the expiration is longer than 5 minutes from now renew 5 minutes early
+            if(msUntilExpired > 300000) {
+              msUntilRenew = msUntilExpired - 300000;
+            }
+            //If the expiration is longer than 60 seconds from now renew 30 seconds early
+            else if(msUntilExpired >= 60000) {
+              msUntilRenew = msUntilExpired - 30000;
+            }
+
+            if(msUntilRenew) {
+                //console.log('UH JWT renewal scheduled in ' + msUntilRenew / 1000 + ' seconds');
+                setTimeout(this.renewUhJwt.bind(this), msUntilRenew);
+            }
+            else {
+              console.warn("Not scheduling automatic UH JWT renewal because expiration is too short.")
+            }
+
+          }
+          this._setUhUser(uhUser);
+          //console.log('Logged in (service) as: ' + this.uhUser.name);
+        },
+        _uhJwtError: function(e) {
+          //console.error('Error logging in to service.');
+          this._setUhUser(null);
+          this.fire('uh-jwt-error', e.detail);
+        },
+        _uhUserChanged: function(newUhUser, oldUhUser) {
+            this.fire('new-uh-jwt', newUhUser);
+        },
+      });
+    })();
+  </script>
+</dom-module>

@@ -1,0 +1,102 @@
+<link rel="import" href="../iron-image/iron-image.html">
+
+<!--
+The `<google-at-uh-nav-header>` element displays information about the signed in user and is intended to be placed
+at the top of the navigation panel (as the first element of a `<paper-scroll-header-panel>`).
+
+@demo demo/index.html
+
+-->
+<dom-module id="google-at-uh-nav-header">
+
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        height: 128px;
+        background: url(images/nav_header_bg.png);
+        background-size: cover;
+        position: relative;
+        color: white;
+      }
+      #content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding-left: 16px;
+        padding-bottom: 8px;
+        font-size: 14px
+      }
+      #profileImage {
+        width:48px;
+        height:48px;
+        border-radius: 50%;
+      }
+      #genericProfile {
+        display:inline-block;
+        padding: 4px;
+        margin: 0;
+        color: var(--paper-brown-100);
+        background-color: var(--paper-brown-500);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+
+      }
+      #genericProfile iron-icon {
+        width: 40px;
+        height: 40px;
+      }
+    </style>
+    <div id="content">
+      <iron-image id="profileImage" sizing="cover" hidden></iron-image>
+      <div id="genericProfile" hidden><iron-icon icon="social:person"></iron-icon></div>
+      <br/>
+      <span id="name" class="paper-font-body2">{{uhUser.name}}</span><br/>
+      <span id="email" class="paper-font-body1">{{uhUser.email}}</span>
+    </div>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'google-at-uh-nav-header',
+        properties: {
+          /**
+           * This should be set from the `uhUser` object obtained from the `google-at-uh` element.
+           * The header's values will be set from this object.
+           */
+          uhUser: {
+            type: Object,
+            notify: false,
+            readOnly: false,
+            observer: '_uhUserChanged'
+          }
+        },
+        _uhUserChanged: function(newUhUser) {
+          if (newUhUser) {
+            if (newUhUser.photoUrl) {
+              this.$.profileImage.src = newUhUser.photoUrl;
+              this._showGenericProfile(false);
+            } else {
+              this._showGenericProfile(true);
+            }
+          } else {
+            this._hideBothProfileImages();
+          }
+        },
+        _showGenericProfile: function(_showGenericProfile) {
+          this.$.profileImage.hidden = _showGenericProfile;
+          this.$.genericProfile.hidden = !_showGenericProfile;
+        },
+        _hideBothProfileImages: function() {
+          this.$.profileImage.hidden = true;
+          this.$.genericProfile.hidden = true;
+        }
+
+      });
+    })();
+  </script>
+</dom-module>

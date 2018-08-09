@@ -1,0 +1,51 @@
+<!--
+`<google-at-uh-button>` is a customization of the standard google identity button used by the `<google-at-uh>` element.
+ If you're using that element, you probably won't need to use this.
+
+The default button created by the google apis don't let you change the text so this custom element was created.
+ It was built following the guidelines and using the resources found at the
+ Google Identity Platform's Branding Guidelines page - https://developers.google.com/identity/branding-guidelines.
+
+ @demo demo/index.html
+-->
+<dom-module id="google-at-uh-button">
+  <template>
+    <style is="custom-style">
+      paper-button {
+        padding-left: 8px;
+
+        --paper-button-ink-color: var(--accent-color);
+      }
+      iron-image {
+        vertical-align: middle;
+        margin-right: 14px;
+      }
+      #buttonText {
+        color: rgb(117, 117, 117);
+        text-transform: none;
+      }
+
+    </style>
+    <paper-button raised><iron-image src="images/google-sign-in-logo.svg"></iron-image><span id="text" class="paper-font-body2" style="font-size: 13px;">[[buttonText]]</span></paper-button>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'google-at-uh-button',
+        properties: {
+          /**
+           * The text for sign in button. You should probably keep the default for consistency accross apps.
+           * If you do change it - you should follow the Google Identity Platform's branding guidelines found
+           * at https://developers.google.com/identity/branding-guidelines.
+           *
+           */
+          buttonText: {
+            type: String,
+            value: 'Sign in with Google@UH'
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>
